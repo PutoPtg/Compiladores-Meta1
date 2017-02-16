@@ -3,7 +3,7 @@
 *Analisador Lexical da linguagem Ja - Sub-conjunto de Java
 *Cadeira de Compiladores - 2017 - Licenciartura em Engenharia Informárica
 *Manuel Madeira Amado - 2006131282
-*Xavier Silva - 
+*Xavier Silva - 2013153577
 *Versão 0.0
 ************************************************************************************/
 
