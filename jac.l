@@ -9,15 +9,28 @@
 
 
 /*FIXED - já está com a flag -l e -1 */
+/*DONE - comentário como em C*/
+
 /*TODO - adicionar palavras reservadas, mas à medida que nos vamos lembrando */
+/*TODO - fazer comentário de Java // */
+
+%X COMMENT
 
 %{
 	int valorL = 1;
+	long long int contaLinha = 1;
+	long long int contaColuna = 1;
 %}
 
 reserved	break|case|"++"|"--"
 
 %%
+"/*"								{BEGIN COMMENT;}
+<COMMENT>"*/"						{BEGIN 0;} /*Comentário*/
+<COMMENT>.							{}	/*incrementa coluna*/
+<COMMENT>"\n"						{}	/*incrementa linha*/
+<COMMENT><<EOF>>					{} /*erro de unterminated comment*/
+
 {reserved}							{if(valorL)printf("RESERVED(%s)\n", yytext);}					
 "boolean"							{if(valorL)printf("BOOL\n");}
 "true"|"false"						{if(valorL)printf("BOOLLIT\n");}
