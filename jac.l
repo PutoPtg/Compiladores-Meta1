@@ -1,15 +1,11 @@
 /***********************************************************************************
 *Ficheiro "jac.l" 
 *Analisador Lexical da linguagem Ja - Sub-conjunto de Java
-*Cadeira de Compiladores - 2017 - Licenciartura em Engenharia Informárica
+*Cadeira de Compiladores - 2017 - Licenciatura em Engenharia Informárica
 *Manuel Madeira Amado - 2006131282
 *Xavier Silva - 2013153577
-*Versão 0.1
+*Versão 0.2
 ************************************************************************************/
-
-
-/*FIXED - já está com a flag -l e -1 */
-/*DONE - comentário como em C*/
 
 /*TODO - adicionar palavras reservadas, mas à medida que nos vamos lembrando */
 /*TODO - fazer comentário de Java // */
@@ -22,7 +18,11 @@
 	long long int contaColuna = 1;
 %}
 
+digito		[0-9]|[0-9]+[0-9_]*[0-9]?
 reserved	break|case|"++"|"--"
+seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
+expoente 	("e"|"E")("+"|"-")*[0-9]+
+	
 
 %%
 "/*"								{BEGIN COMMENT;}
@@ -30,6 +30,13 @@ reserved	break|case|"++"|"--"
 <COMMENT>.							{}	/*incrementa coluna*/
 <COMMENT>"\n"						{}	/*incrementa linha*/
 <COMMENT><<EOF>>					{} /*erro de unterminated comment*/
+
+\"([^\"\r\n\\]|{seqEscape})*\"		{if(valorL)printf("STRLIT(%s)\n", yytext);}
+
+{digito}"."({digito}|{expoente})?|"."{digito}{expoente}?|{digito}{expoente}		{if(valorL)printf("REALLIT(%s)\n", yytext);}
+0|[1-9]+[0-9_]*[0-9]?				{if(valorL)printf("DECLIT(%s)\n", yytext);}
+
+
 
 {reserved}							{if(valorL)printf("RESERVED(%s)\n", yytext);}					
 "boolean"							{if(valorL)printf("BOOL\n");}
