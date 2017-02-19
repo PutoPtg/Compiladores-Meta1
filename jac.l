@@ -8,7 +8,6 @@
 ************************************************************************************/
 
 /*TODO - adicionar palavras reservadas, mas à medida que nos vamos lembrando */
-/*TODO - fazer comentário de Java // */
 
 %X COMMENT
 %X STRINGUNTERMINATED
