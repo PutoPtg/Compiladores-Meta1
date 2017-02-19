@@ -11,11 +11,14 @@
 /*TODO - fazer comentário de Java // */
 
 %X COMMENT
+%X STRINGUNTERMINATED
+%X JAVACOMMENT
 
 %{
 	int valorL = 1;
 	long long int contaLinha = 1;
 	long long int contaColuna = 1;
+	int commentcoluna, commentlinha;
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
@@ -25,64 +28,76 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 	
 
 %%
-"/*"								{BEGIN COMMENT;}
-<COMMENT>"*/"						{BEGIN 0;} /*Comentário*/
-<COMMENT>.							{}	/*incrementa coluna*/
-<COMMENT>"\n"						{}	/*incrementa linha*/
-<COMMENT><<EOF>>					{} /*erro de unterminated comment*/
 
-\"([^\"\r\n\\]|{seqEscape})*\"		{if(valorL)printf("STRLIT(%s)\n", yytext);}
-
-{digito}"."({digito}|{expoente})?|"."{digito}{expoente}?|{digito}{expoente}		{if(valorL)printf("REALLIT(%s)\n", yytext);}
-0|[1-9]+[0-9_]*[0-9]?				{if(valorL)printf("DECLIT(%s)\n", yytext);}
+"//"								{BEGIN JAVACOMMENT; commentcoluna=yyleng;commentlinha=0;}
+<JAVACOMMENT>.						{commentcoluna+=yyleng;}
+<JAVACOMMENT>\n 					{BEGIN 0;contaLinha++;contaColuna=1;}
+<JAVACOMMENT><<EOF>>				{BEGIN 0;}
 
 
+"/*"								{BEGIN COMMENT;commentcoluna=yyleng;commentlinha=0;}
+<COMMENT>"*/"						{BEGIN 0;contaLinha+=commentlinha; contaColuna+=commentcoluna+yyleng;} /*Comentário*/
+<COMMENT>.							{commentcoluna+=yyleng;}	/*incrementa coluna*/
+<COMMENT>"\n"						{commentlinha++;commentcoluna=0;}	/*incrementa linha*/
+<COMMENT><<EOF>>					{printf("Line %lld, col %lld: unterminated comment\n", contaLinha, contaColuna); BEGIN 0;} /*erro de unterminated comment*/
 
-{reserved}							{if(valorL)printf("RESERVED(%s)\n", yytext);}					
-"boolean"							{if(valorL)printf("BOOL\n");}
-"true"|"false"						{if(valorL)printf("BOOLLIT\n");}
-"class"								{if(valorL)printf("CLASS\n");}
-"do"								{if(valorL)printf("DO\n");}
-".length"							{if(valorL)printf("DOTLENGTH\n");}
-"double"							{if(valorL)printf("DOUBLE\n");}
-"else"								{if(valorL)printf("ELSE\n");}
-"if"								{if(valorL)printf("IF\n");}
-"int"								{if(valorL)printf("INT\n");}
-"Integer.parseInt"					{if(valorL)printf("PARSEINT\n");}
-"System.out.println"				{if(valorL)printf("PRINT\n");}
-"public"							{if(valorL)printf("PUBLIC\n");}
-"return"							{if(valorL)printf("RETURN\n");}
-"static"							{if(valorL)printf("STATIC\n");}
-"String"							{if(valorL)printf("STRING\n");}
-"void"								{if(valorL)printf("VOID\n");}
-"while"								{if(valorL)printf("WHILE\n");}
-"("									{if(valorL)printf("OCURV\n");}
-")"									{if(valorL)printf("CCURV\n");}
-"{"									{if(valorL)printf("OBRACE\n");}
-"}"									{if(valorL)printf("CBRACE\n");}
-"["									{if(valorL)printf("OSQUARE\n");}
-"]"									{if(valorL)printf("CSQUARE\n");}
-"&&"								{if(valorL)printf("AND\n");}
-"||"								{if(valorL)printf("OR\n");}
-"<"									{if(valorL)printf("LT\n");}
-">"									{if(valorL)printf("GT\n");}
-"=="								{if(valorL)printf("EQ\n");}
-"!="								{if(valorL)printf("NEQ\n");}
-"<="								{if(valorL)printf("LEQ\n");}
-">="								{if(valorL)printf("GEQ\n");}
-"+"									{if(valorL)printf("PLUS\n");}
-"-"									{if(valorL)printf("MINUS\n");}
-"*"									{if(valorL)printf("STAR0\n");}
-"/"									{if(valorL)printf("DIV\n");}
-"%"									{if(valorL)printf("MOD\n");}
-"!"									{if(valorL)printf("NOT\n");}
-"="									{if(valorL)printf("ASSIGN\n");}
-";"									{if(valorL)printf("SEMI\n");}
-","									{if(valorL)printf("COMMA\n");}
-[a-zA-Z_$][a-zA-Z0-9_$]*			{if(valorL)printf("ID(%s)\n", yytext);}
-"\n"								{}
-[ ]									{}
-"\t"								{}
+\"([^\"\r\n\\]|{seqEscape})*\"		{if(valorL){printf("STRLIT(%s)\n", yytext);}contaColuna+=yyleng;}
+
+{digito}"."({digito}|{expoente})?|"."{digito}{expoente}?|{digito}{expoente}		{if(valorL){printf("REALLIT(%s)\n", yytext);}contaColuna+=yyleng;}
+0|[1-9]+[0-9_]*[0-9]?				{if(valorL){printf("DECLIT(%s)\n", yytext);}contaColuna+=yyleng;}
+
+\"									{BEGIN STRINGUNTERMINATED;}
+<STRINGUNTERMINATED><<EOF>>			{printf("Line %lld, col %lld: unterminated string literal\n",contaLinha,contaColuna);BEGIN 0;}
+<STRINGUNTERMINATED>\n				{printf("Line %lld, col %lld: unterminated string literal\n",contaLinha,contaColuna);BEGIN 0;contaLinha++;contaColuna=1;}
+<STRINGUNTERMINATED>. 				{;}
+
+{reserved}							{if(valorL){printf("RESERVED(%s)\n", yytext);}contaColuna+=yyleng;}				
+"boolean"							{if(valorL){printf("BOOL\n");}contaColuna+=yyleng;}
+"true"|"false"						{if(valorL){printf("BOOLLIT\n");}contaColuna+=yyleng;}
+"class"								{if(valorL){printf("CLASS\n");}contaColuna+=yyleng;}
+"do"								{if(valorL){printf("DO\n");}contaColuna+=yyleng;}
+".length"							{if(valorL){printf("DOTLENGTH\n");}contaColuna+=yyleng;}
+"double"							{if(valorL){printf("DOUBLE\n");}contaColuna+=yyleng;}
+"else"								{if(valorL){printf("ELSE\n");}contaColuna+=yyleng;}
+"if"								{if(valorL){printf("IF\n");}contaColuna+=yyleng;}
+"int"								{if(valorL){printf("INT\n");}contaColuna+=yyleng;}
+"Integer.parseInt"					{if(valorL){printf("PARSEINT\n");}contaColuna+=yyleng;}
+"System.out.println"				{if(valorL){printf("PRINT\n");}contaColuna+=yyleng;}
+"public"							{if(valorL){printf("PUBLIC\n");}contaColuna+=yyleng;}
+"return"							{if(valorL){printf("RETURN\n");}contaColuna+=yyleng;}
+"static"							{if(valorL){printf("STATIC\n");}contaColuna+=yyleng;}
+"String"							{if(valorL){printf("STRING\n");}contaColuna+=yyleng;}
+"void"								{if(valorL){printf("VOID\n");}contaColuna+=yyleng;}
+"while"								{if(valorL){printf("WHILE\n");}contaColuna+=yyleng;}
+"("									{if(valorL){printf("OCURV\n");}contaColuna+=yyleng;}
+")"									{if(valorL){printf("CCURV\n");}contaColuna+=yyleng;}
+"{"									{if(valorL){printf("OBRACE\n");}contaColuna+=yyleng;}
+"}"									{if(valorL){printf("CBRACE\n");}contaColuna+=yyleng;}
+"["									{if(valorL){printf("OSQUARE\n");}contaColuna+=yyleng;}
+"]"									{if(valorL){printf("CSQUARE\n");}contaColuna+=yyleng;}
+"&&"								{if(valorL){printf("AND\n");}contaColuna+=yyleng;}
+"||"								{if(valorL){printf("OR\n");}contaColuna+=yyleng;}
+"<"									{if(valorL){printf("LT\n");}contaColuna+=yyleng;}
+">"									{if(valorL){printf("GT\n");}contaColuna+=yyleng;}
+"=="								{if(valorL){printf("EQ\n");}contaColuna+=yyleng;}
+"!="								{if(valorL){printf("NEQ\n");}contaColuna+=yyleng;}
+"<="								{if(valorL){printf("LEQ\n");}contaColuna+=yyleng;}
+">="								{if(valorL){printf("GEQ\n");}contaColuna+=yyleng;}
+"+"									{if(valorL){printf("PLUS\n");}contaColuna+=yyleng;}
+"-"									{if(valorL){printf("MINUS\n");}contaColuna+=yyleng;}
+"*"									{if(valorL){printf("STAR0\n");}contaColuna+=yyleng;}
+"/"									{if(valorL){printf("DIV\n");}contaColuna+=yyleng;}
+"%"									{if(valorL){printf("MOD\n");}contaColuna+=yyleng;}
+"!"									{if(valorL){printf("NOT\n");}contaColuna+=yyleng;}
+"="									{if(valorL){printf("ASSIGN\n");}contaColuna+=yyleng;}
+";"									{if(valorL){printf("SEMI\n");}contaColuna+=yyleng;}
+","									{if(valorL){printf("COMMA\n");}contaColuna+=yyleng;}
+[a-zA-Z_$][a-zA-Z0-9_$]*			{if(valorL){printf("ID(%s)\n", yytext);}contaColuna+=yyleng;}
+"\n"								{contaLinha++;contaColuna=1;}
+[ ]									{contaColuna+=1;}
+"\t"								{contaColuna+=1;}
+.									{printf("Line %lld, col %lld: illegal character (%s)\n",contaLinha,contaColuna,yytext);contaColuna++;}
+
 
 %%
 int main(int argc, char* argv[])
