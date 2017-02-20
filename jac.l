@@ -1,5 +1,5 @@
 /***********************************************************************************
-*Ficheiro "jac.l" 
+*Ficheiro "jac.l"
 *Analisador Lexical da linguagem Ja - Sub-conjunto de Java
 *Cadeira de Compiladores - 2017 - Licenciatura em Engenharia Informática
 *Manuel Madeira Amado - 2006131282
@@ -8,6 +8,7 @@
 ************************************************************************************/
 
 /*DONE - adicionar palavras reservadas, mas à medida que nos vamos lembrando - consultei a wikipédia - MMA */
+/*TODO - invalid escape sequence*/
 
 %X COMMENT
 %X STRINGUNTERMINATED
@@ -22,9 +23,10 @@
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
 reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile
-seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
+seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" /* ERRO? - falta uma sequência de escape "\\"" e "\\\\ está a mais*/
+seqEscInv	"\\."
 expoente 	("e"|"E")("+"|"-")*[0-9]+
-	
+
 
 %%
 
@@ -50,7 +52,7 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 <STRINGUNTERMINATED>\n				{printf("Line %lld, col %lld: unterminated string literal\n",contaLinha,contaColuna);BEGIN 0;contaLinha++;contaColuna=1;}
 <STRINGUNTERMINATED>. 				{;}
 
-{reserved}							{if(valorL){printf("RESERVED(%s)\n", yytext);}contaColuna+=yyleng;}				
+{reserved}							{if(valorL){printf("RESERVED(%s)\n", yytext);}contaColuna+=yyleng;}
 "boolean"							{if(valorL){printf("BOOL\n");}contaColuna+=yyleng;}
 "true"|"false"						{if(valorL){printf("BOOLLIT\n");}contaColuna+=yyleng;}
 "class"								{if(valorL){printf("CLASS\n");}contaColuna+=yyleng;}
