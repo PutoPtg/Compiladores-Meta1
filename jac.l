@@ -23,7 +23,7 @@
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
 reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile
-seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" /* ERRO? - falta uma sequência de escape "\\"" e "\\\\ está a mais*/
+seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" %{/* ERRO? - falta uma sequência de escape "\\"" e "\\\\ está a mais*/ %}
 seqEscInv	"\\."
 expoente 	("e"|"E")("+"|"-")*[0-9]+
 
