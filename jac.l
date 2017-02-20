@@ -1,13 +1,13 @@
 /***********************************************************************************
 *Ficheiro "jac.l" 
 *Analisador Lexical da linguagem Ja - Sub-conjunto de Java
-*Cadeira de Compiladores - 2017 - Licenciatura em Engenharia Informárica
+*Cadeira de Compiladores - 2017 - Licenciatura em Engenharia Informática
 *Manuel Madeira Amado - 2006131282
 *Xavier Silva - 2013153577
 *Versão 0.2
 ************************************************************************************/
 
-/*TODO - adicionar palavras reservadas, mas à medida que nos vamos lembrando */
+/*DONE - adicionar palavras reservadas, mas à medida que nos vamos lembrando - consultei a wikipédia - MMA */
 
 %X COMMENT
 %X STRINGUNTERMINATED
@@ -21,7 +21,7 @@
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
-reserved	break|case|"++"|"--"
+reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile
 seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
 expoente 	("e"|"E")("+"|"-")*[0-9]+
 	
