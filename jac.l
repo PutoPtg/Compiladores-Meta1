@@ -7,7 +7,6 @@
 *Versão 0.2
 ************************************************************************************/
 
-/*DONE - adicionar palavras reservadas, mas à medida que nos vamos lembrando - consultei a wikipédia - MMA */
 /*TODO - invalid escape sequence*/
 
 %X COMMENT
@@ -22,8 +21,8 @@
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
-reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile
-seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" %{/* ERRO? - falta uma sequência de escape "\\"" e "\\\\ está a mais*/ %}
+reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile|Integer|System
+seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" 
 seqEscInv	"\\."
 expoente 	("e"|"E")("+"|"-")*[0-9]+
 
@@ -95,8 +94,10 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 ","									{if(valorL){printf("COMMA\n");}contaColuna+=yyleng;}
 [a-zA-Z_$][a-zA-Z0-9_$]*			{if(valorL){printf("ID(%s)\n", yytext);}contaColuna+=yyleng;}
 "\n"								{contaLinha++;contaColuna=1;}
+"\r"								{contaLinha++;contaColuna=1;}		
 [ ]									{contaColuna+=1;}
 "\t"								{contaColuna+=1;}
+"\f"								{contaColuna+=1;}
 .									{printf("Line %lld, col %lld: illegal character (%s)\n",contaLinha,contaColuna,yytext);contaColuna++;}
 
 
