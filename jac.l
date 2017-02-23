@@ -14,14 +14,16 @@
 %X JAVACOMMENT
 
 %{
-	int valorL = 1;
+	#include <string.h>
+
+	int valorL = 0;
 	long long int contaLinha = 1;
 	long long int contaColuna = 1;
 	int commentcoluna, commentlinha;
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
-reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile|Integer|System
+reserved	"++"|"--"|Integer|System|abstract|continue|for|new|switch|assert|default|package|synchronized|goto|private|this|break|implements|protected|throw|byte|import|throws|case|enum|instanceof|transient|catch|extends|short|try|char|final|interface|finally|long|strictfp|volatile|const|float|native|super
 seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" 
 seqEscInv	"\\."
 expoente 	("e"|"E")("+"|"-")*[0-9]+
@@ -53,7 +55,7 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 
 {reserved}							{if(valorL){printf("RESERVED(%s)\n", yytext);}contaColuna+=yyleng;}
 "boolean"							{if(valorL){printf("BOOL\n");}contaColuna+=yyleng;}
-"true"|"false"						{if(valorL){printf("BOOLLIT\n");}contaColuna+=yyleng;}
+"true"|"false"						{if(valorL){printf("BOOLLIT(%s)\n",yytext);}contaColuna+=yyleng;}
 "class"								{if(valorL){printf("CLASS\n");}contaColuna+=yyleng;}
 "do"								{if(valorL){printf("DO\n");}contaColuna+=yyleng;}
 ".length"							{if(valorL){printf("DOTLENGTH\n");}contaColuna+=yyleng;}
@@ -85,7 +87,7 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 ">="								{if(valorL){printf("GEQ\n");}contaColuna+=yyleng;}
 "+"									{if(valorL){printf("PLUS\n");}contaColuna+=yyleng;}
 "-"									{if(valorL){printf("MINUS\n");}contaColuna+=yyleng;}
-"*"									{if(valorL){printf("STAR0\n");}contaColuna+=yyleng;}
+"*"									{if(valorL){printf("STAR\n");}contaColuna+=yyleng;}
 "/"									{if(valorL){printf("DIV\n");}contaColuna+=yyleng;}
 "%"									{if(valorL){printf("MOD\n");}contaColuna+=yyleng;}
 "!"									{if(valorL){printf("NOT\n");}contaColuna+=yyleng;}
@@ -104,8 +106,8 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 %%
 int main(int argc, char* argv[])
 {
-  if(argv[1] == NULL)
-  	valorL = 0;
+  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0)
+  	valorL = 1;
   yylex();
   return 0;
 }
