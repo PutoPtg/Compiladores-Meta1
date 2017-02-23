@@ -4,25 +4,27 @@
 *Cadeira de Compiladores - 2017 - Licenciatura em Engenharia Informática
 *Manuel Madeira Amado - 2006131282
 *Xavier Silva - 2013153577
-*Versão 0.2
+*Versão 0.4
 ************************************************************************************/
 
-/*TODO - invalid escape sequence*/
+/*TODO - à bulha com as sequências de escape*/
 
 %X COMMENT
-%X STRINGUNTERMINATED
 %X JAVACOMMENT
+%X ESCAPESEQ
+%X STRLIT
 
 %{
 	int valorL = 1;
 	long long int contaLinha = 1;
 	long long int contaColuna = 1;
 	int commentcoluna, commentlinha;
+	long long ustringcoluna, ustringlinha;
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
 reserved	break|case|"++"|"--"|abstract|assert|byte|case|catch|char|const|continue|default|enum|extends|final|finally|float|for|goto|implements|import|instanceof|interface|long|native|new|package|protected|short|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile|Integer|System
-seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f" 
+seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
 seqEscInv	"\\."
 expoente 	("e"|"E")("+"|"-")*[0-9]+
 
@@ -41,15 +43,32 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 <COMMENT>"\n"						{commentlinha++;commentcoluna=0;}	/*incrementa linha*/
 <COMMENT><<EOF>>					{printf("Line %lld, col %lld: unterminated comment\n", contaLinha, contaColuna); BEGIN 0;} /*erro de unterminated comment*/
 
-\"([^\"\r\n\\]|{seqEscape})*\"		{if(valorL){printf("STRLIT(%s)\n", yytext);}contaColuna+=yyleng;}
 
 {digito}"."({digito}|{expoente})?|"."{digito}{expoente}?|{digito}{expoente}		{if(valorL){printf("REALLIT(%s)\n", yytext);}contaColuna+=yyleng;}
 0|[1-9]+[0-9_]*[0-9]?				{if(valorL){printf("DECLIT(%s)\n", yytext);}contaColuna+=yyleng;}
 
-\"									{BEGIN STRINGUNTERMINATED;}
-<STRINGUNTERMINATED><<EOF>>			{printf("Line %lld, col %lld: unterminated string literal\n",contaLinha,contaColuna);BEGIN 0;}
-<STRINGUNTERMINATED>\n				{printf("Line %lld, col %lld: unterminated string literal\n",contaLinha,contaColuna);BEGIN 0;contaLinha++;contaColuna=1;}
-<STRINGUNTERMINATED>. 				{;}
+\"									{BEGIN STRLIT;ustringcoluna=contaColuna;ustringlinha=contaLinha;}
+<STRLIT>\\n							{contaColuna+=1;}
+<STRLIT>\\f							{contaColuna+=1;}
+<STRLIT>\\r							{contaColuna+=1;}
+<STRLIT>\\t							{contaColuna+=1;}
+<STRLIT>\\\\						{contaColuna+=1;}
+<STRLIT>\\\"						{contaColuna+=1;}
+<STRLIT>\\.							{printf("Line %lld, col %lld: invalid escape sequence\n", contaLinha, contaColuna);contaColuna+=1;}
+<STRLIT><<EOF>>						{printf("Line %lld, col %lld: unterminated string literal\n",ustringlinha,ustringcoluna);BEGIN 0;}
+<STRLIT>\n							{printf("Line %lld, col %lld: unterminated string literal\n",ustringlinha,ustringcoluna);BEGIN 0;contaLinha++;contaColuna=1;}
+<STRLIT>\"							{BEGIN 0;}
+<STRLIT>. 							{contaColuna+=1;}
+
+\\									{BEGIN ESCAPESEQ; ustringcoluna=contaColuna;ustringlinha=contaLinha;}
+<ESCAPESEQ>n 						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>f						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>r						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>t						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>\\						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>\"						{contaColuna+=1;BEGIN 0;}
+<ESCAPESEQ>\\n						{contaLinha++;contaColuna=1;BEGIN 0;}
+<ESCAPESEQ>.						{printf("Line %lld, col %lld: invalid escape sequence (\\%s)\n", contaLinha, contaColuna, yytext);contaColuna+=1;BEGIN 0;}
 
 {reserved}							{if(valorL){printf("RESERVED(%s)\n", yytext);}contaColuna+=yyleng;}
 "boolean"							{if(valorL){printf("BOOL\n");}contaColuna+=yyleng;}
@@ -94,7 +113,7 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 ","									{if(valorL){printf("COMMA\n");}contaColuna+=yyleng;}
 [a-zA-Z_$][a-zA-Z0-9_$]*			{if(valorL){printf("ID(%s)\n", yytext);}contaColuna+=yyleng;}
 "\n"								{contaLinha++;contaColuna=1;}
-"\r"								{contaLinha++;contaColuna=1;}		
+"\r"								{contaLinha++;contaColuna=1;}
 [ ]									{contaColuna+=1;}
 "\t"								{contaColuna+=1;}
 "\f"								{contaColuna+=1;}
