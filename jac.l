@@ -25,9 +25,10 @@
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
-reserved	"++"|"--"|Integer|System|abstract|continue|for|new|switch|assert|default|package|synchronized|goto|private|this|break|implements|protected|throw|byte|import|throws|case|enum|instanceof|transient|catch|extends|short|try|char|final|interface|finally|long|strictfp|volatile|const|float|native|super
+reserved	"++"|"--"|Integer|System|abstract|continue|for|new|null|switch|assert|default|package|synchronized|goto|private|this|break|implements|protected|throw|byte|import|throws|case|enum|instanceof|transient|catch|extends|short|try|char|final|interface|finally|long|strictfp|volatile|const|float|native|super
 seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
 seqEscInv	"\\."
+endline		"\\r"|"\\n"|"\\r\\n
 expoente 	("e"|"E")("+"|"-")*[0-9]+
 
 
@@ -35,14 +36,14 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 
 "//"								{BEGIN JAVACOMMENT; commentcoluna=yyleng;commentlinha=0;}
 <JAVACOMMENT>.						{commentcoluna+=yyleng;}
-<JAVACOMMENT>\n 					{BEGIN 0;contaLinha++;contaColuna=1;}
+<JAVACOMMENT>\n|\r|\r\n				{BEGIN 0;contaLinha++;contaColuna=1;}
 <JAVACOMMENT><<EOF>>				{BEGIN 0;}
 
 
 "/*"								{BEGIN COMMENT;commentcoluna=yyleng;commentlinha=0;}
 <COMMENT>"*/"						{BEGIN 0;contaLinha+=commentlinha; contaColuna+=commentcoluna+yyleng;} /*Comentário*/
 <COMMENT>.							{commentcoluna+=yyleng;}	/*incrementa coluna*/
-<COMMENT>"\n"						{commentlinha++;commentcoluna=0;}	/*incrementa linha*/
+<COMMENT>\n|\r|\r\n					{commentlinha++;commentcoluna=0;}	/*incrementa linha*/
 <COMMENT><<EOF>>					{printf("Line %lld, col %lld: unterminated comment\n", contaLinha, contaColuna); BEGIN 0;} /*erro de unterminated comment*/
 
 
