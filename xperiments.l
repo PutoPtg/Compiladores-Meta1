@@ -9,13 +9,17 @@
 
 /*TODO - invalid escape sequence*/
 
-%X STRLIT
+%X ESCAPESEQ
 
 %{
-	int valorL = 1;
+	#include <string.h>
+
+	int valorL = 0;
+	int debug = 0;
 	long long int contaLinha = 1;
 	long long int contaColuna = 1;
 	int commentcoluna, commentlinha;
+	long long ustringcoluna, ustringlinha;
 %}
 
 digito		[0-9]|[0-9]+[0-9_]*[0-9]?
@@ -26,22 +30,28 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 
 
 %%
-\"								{BEGIN STRLIT; commentcoluna=yyleng;commentlinha=0;}
-<STRLIT>[^\\"\n]*				{commentcoluna+=yyleng;}
-<STRLIT>\\n 					{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\f						{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\r						{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\t						{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\\\					{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\\"					{{printf("FOUND escSeq(%s)\n", yytext);}commentcoluna+=yyleng;}
-<STRLIT>\\.						{printf("Line %lld, col %lld: invalid escape sequence\n", contaLinha, contaColuna);} /*erro de unterminated comment*/
-<STRLIT>\"						{BEGIN 0;}
+
+\\									{BEGIN ESCAPESEQ;}
+<ESCAPESEQ>n 						{BEGIN 0;if(debug){printf("ESCAPESEQ EOL NL\n");}}
+<ESCAPESEQ>f						{BEGIN 0;}
+<ESCAPESEQ>r						{BEGIN 0;if(debug){printf("ESCAPESEQ EOL CR\n");}}
+<ESCAPESEQ>t						{BEGIN 0;}
+<ESCAPESEQ>\\						{BEGIN 0;}
+<ESCAPESEQ>\"						{BEGIN 0;}
+<ESCAPESEQ>.						{printf("invalid escape sequence \n");BEGIN 0;}
+
+"\n"|"\r"|"\r\n"							{printf("FOUND EOL\n");}
+
 
 %%
 int main(int argc, char* argv[])
 {
-  if(argv[1] == NULL)
-  	valorL = 0;
+  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0 || strcmp(argv[1],"-d") == 0){
+  	valorL = 1;
+  	if(strcmp(argv[1],"-d") == 0){
+  	debug = 1;
+  	}
+  }
   yylex();
   return 0;
 }
@@ -49,5 +59,3 @@ int yywrap()
 {
 return 1;
 }
-
-/*\"([^\"\r\n\\]|{seqEscape})*\"		{if(valorL){printf("STRLIT(%s)\n", yytext);}contaColuna+=yyleng;}*/
