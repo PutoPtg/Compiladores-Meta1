@@ -35,15 +35,15 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 %%
 
 "//"								{BEGIN JAVACOMMENT; commentcoluna=yyleng;commentlinha=0;}
+<JAVACOMMENT>\n|\r|\r\n 			{BEGIN 0;contaLinha++;contaColuna=1;}
 <JAVACOMMENT>.						{commentcoluna+=yyleng;}
-<JAVACOMMENT>\n|\r|\r\n				{BEGIN 0;contaLinha++;contaColuna=1;}
 <JAVACOMMENT><<EOF>>				{BEGIN 0;}
 
 
 "/*"								{BEGIN COMMENT;commentcoluna=yyleng;commentlinha=0;}
 <COMMENT>"*/"						{BEGIN 0;contaLinha+=commentlinha; contaColuna+=commentcoluna+yyleng;} /*Comentário*/
-<COMMENT>.							{commentcoluna+=yyleng;}	/*incrementa coluna*/
 <COMMENT>\n|\r|\r\n					{commentlinha++;commentcoluna=0;}	/*incrementa linha*/
+<COMMENT>.							{commentcoluna+=yyleng;}	/*incrementa coluna*/
 <COMMENT><<EOF>>					{printf("Line %lld, col %lld: unterminated comment\n", contaLinha, contaColuna); BEGIN 0;} /*erro de unterminated comment*/
 
 
