@@ -58,10 +58,10 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 <STRLIT>\\\\						{contaColuna+=1;}
 <STRLIT>\\\"						{contaColuna+=1;}
 <STRLIT>\\.							{printf("Line %lld, col %lld: invalid escape sequence\n", contaLinha, contaColuna);contaColuna+=1;}
-<STRLIT><<EOF>>						{printf("Line %lld, col %lld: unterminated string literal\n",ustringlinha,ustringcoluna);BEGIN 0;}
 <STRLIT>\n							{printf("Line %lld, col %lld: unterminated string literal\n",ustringlinha,ustringcoluna);BEGIN 0;contaLinha++;contaColuna=1;}
-<STRLIT>\"							{BEGIN 0;}
+<STRLIT>\"							{contaColuna+=1; BEGIN 0;}
 <STRLIT>. 							{contaColuna+=1;}
+<STRLIT><<EOF>>						{printf("Line %lld, col %lld: unterminated string literal\n",ustringlinha,ustringcoluna);BEGIN 0;}
 
 \\									{BEGIN ESCAPESEQ; ustringcoluna=contaColuna;ustringlinha=contaLinha;}
 <ESCAPESEQ>n 						{contaColuna+=1;BEGIN 0;}
@@ -124,12 +124,10 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 
 
 %%
-int main(int argc, char* argv[]){
-if(argc >1){
-  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0){
+int main(int argc, char* argv[])
+{
+  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0)
   	valorL = 1;
-  	}
-  }
   yylex();
   return 0;
 }

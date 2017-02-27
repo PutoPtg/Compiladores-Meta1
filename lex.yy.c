@@ -2420,10 +2420,12 @@ void yyfree (void * ptr )
 #line 126 "jac.l"
 
 
-int main(int argc, char* argv[])
-{
-  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0)
+int main(int argc, char* argv[]){
+if(argc >1){
+  if(strcmp(argv[1],"-l") == 0 || strcmp(argv[1],"-1") == 0){
   	valorL = 1;
+  	}
+  }
   yylex();
   return 0;
 }
