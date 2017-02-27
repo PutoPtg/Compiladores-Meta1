@@ -24,12 +24,12 @@
 	long long ustringcoluna, ustringlinha;
 %}
 
-digito		[0-9]|[0-9]+[0-9_]*[0-9]?
+digito		[0-9]|[0-9]+[0-9_]*[0-9]+
 reserved	"++"|"--"|Integer|System|abstract|continue|for|new|null|switch|assert|default|package|synchronized|goto|private|this|break|implements|protected|throw|byte|import|throws|case|enum|instanceof|transient|catch|extends|short|try|char|final|interface|finally|long|strictfp|volatile|const|float|native|super
 seqEscape	"\\n"|"\\t"|"\\r|"\\\\"|"\\\"|"\\f"
 seqEscInv	"\\."
 endline		"\\r"|"\\n"|"\\r\\n
-expoente 	("e"|"E")("+"|"-")*[0-9]+
+expoente 	("e"|"E")("+"|"-")*{digito}+
 
 
 %%
@@ -47,8 +47,8 @@ expoente 	("e"|"E")("+"|"-")*[0-9]+
 <COMMENT><<EOF>>					{printf("Line %lld, col %lld: unterminated comment\n", contaLinha, contaColuna); BEGIN 0;} /*erro de unterminated comment*/
 
 
-{digito}"."({digito}|{expoente})?|"."{digito}{expoente}?|{digito}{expoente}		{if(valorL){printf("REALLIT(%s)\n", yytext);}contaColuna+=yyleng;}
-0|[1-9]+[0-9_]*[0-9]?				{if(valorL){printf("DECLIT(%s)\n", yytext);}contaColuna+=yyleng;}
+{digito}?"."({digito}|{expoente})?|"."{digito}{expoente}?		{if(valorL){printf("REALLIT(%s)\n", yytext);}contaColuna+=yyleng;}
+0|[1-9]+|[1-9]+[0-9_]*[0-9]+				{if(valorL){printf("DECLIT(%s)\n", yytext);}contaColuna+=yyleng;}
 
 \"									{BEGIN STRLIT;ustringcoluna=contaColuna;ustringlinha=contaLinha;}
 <STRLIT>\\n							{contaColuna+=1;}
